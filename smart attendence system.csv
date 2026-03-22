@@ -1,0 +1,63 @@
+# Smart Attendance System (Final Safe Version)
+
+import cv2
+import os
+from datetime import datetime
+
+# Load face detector
+face_cascade = cv2.CascadeClassifier(
+    cv2.data.haarcascades + 'haarcascade_frontalface_default.xml'
+)
+
+# Start camera
+cap = cv2.VideoCapture(0)
+
+# ✅ Check camera opened or not
+if not cap.isOpened():
+    print("❌ Camera not detected. Try changing index (0 → 1)")
+    exit()
+
+# Create attendance file
+if not os.path.exists("attendance.csv"):
+    with open("attendance.csv", "w") as f:
+        f.write("Name,Time,Date\n")
+
+name = input("Enter your name: ")
+marked = False
+
+print("Press 'q' to quit...")
+
+while True:
+    ret, frame = cap.read()
+
+    # ✅ VERY IMPORTANT FIX
+    if not ret or frame is None:
+        continue   # skip instead of crash
+
+    gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
+
+    faces = face_cascade.detectMultiScale(gray, 1.3, 5)
+
+    for (x, y, w, h) in faces:
+        cv2.rectangle(frame, (x, y), (x+w, y+h), (0, 255, 0), 2)
+
+        if not marked:
+            now = datetime.now()
+            time = now.strftime('%H:%M:%S')
+            date = now.strftime('%d-%m-%Y')
+
+            with open("attendance.csv", "a") as f:
+                f.write(f"{name},{time},{date}\n")
+
+            print("✅ Attendance Marked")
+            marked = True
+
+    cv2.imshow("Attendance System", frame)
+
+    if cv2.waitKey(1) & 0xFF == ord('q'):
+        break
+
+cap.release()
+cv2.destroyAllWindows()
+pranshu tyagi,14:57:20,21-03-2026
+pranshu tyagi,15:18:23,21-03-2026
